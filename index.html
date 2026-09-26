@@ -1,0 +1,493 @@
+
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Shopping List</title>
+  <style>
+
+    /* ── RESET & BASE ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    /* ── PAGE TITLE ── */
+    h1 {
+      text-align: center;
+      font-size: 2.2rem;
+      color: #4a6cf7;
+      margin-bottom: 6px;
+    }
+    .tagline {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    /* ── PASTE BOX ── */
+    .paste-section {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      max-width: 700px;
+      margin: 0 auto 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .paste-section label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #555;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 12px;
+      font-size: 1rem;
+      border: 2px solid #e0e7ff;
+      border-radius: 10px;
+      resize: vertical;
+      outline: none;
+      font-family: Arial, sans-serif;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: #4a6cf7; }
+
+    /* ── BUTTONS ROW ── */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    button:hover  { opacity: 0.88; }
+    button:active { transform: scale(0.96); }
+    .btn-add     { background: #4a6cf7; color: white; }
+    .btn-clear   { background: #ff5c5c; color: white; }
+    .btn-checked { background: #eee;    color: #555;  }
+    .btn-print   { background: #22c55e; color: white; margin-left: auto; }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      max-width: 700px;
+      margin: 0 auto 16px;
+      display: none;
+    }
+    .progress-wrap.show { display: block; }
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      font-weight: bold;
+      color: #555;
+      margin-bottom: 6px;
+    }
+    .progress-bar-bg {
+      background: #dde5ff;
+      border-radius: 99px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #4a6cf7, #7c3aed);
+      height: 100%;
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* ── FILTER TABS ── */
+    .filter-tabs {
+      max-width: 700px;
+      margin: 0 auto 18px;
+      display: none;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-tabs.show { display: flex; }
+    .tab {
+      padding: 7px 18px;
+      border-radius: 99px;
+      border: 2px solid #dde5ff;
+      background: white;
+      color: #555;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab.active { background: #4a6cf7; color: white; border-color: #4a6cf7; }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #ccc;
+      font-size: 1.05rem;
+      display: none;
+    }
+    .empty.show { display: block; }
+    .empty-icon {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    /* ── GRID ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 16px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* ── CARD ── */
+    .card {
+      border-radius: 20px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      color: white;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s, filter 0.3s;
+      animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+    }
+    .card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.15);
+    }
+    .card.done {
+      filter: saturate(0.4);
+      opacity: 0.7;
+      box-shadow: none;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.8) translateY(16px); }
+      to   { opacity: 1; transform: scale(1)   translateY(0);    }
+    }
+
+    /* ── 7 GRADIENT COLORS ── */
+    .c0 { background: linear-gradient(135deg, #fb7185, #ec4899); }
+    .c1 { background: linear-gradient(135deg, #8b5cf6, #d946ef); }
+    .c2 { background: linear-gradient(135deg, #22d3ee, #3b82f6); }
+    .c3 { background: linear-gradient(135deg, #fbbf24, #f97316); }
+    .c4 { background: linear-gradient(135deg, #34d399, #14b8a6); }
+    .c5 { background: linear-gradient(135deg, #6366f1, #a855f7); }
+    .c6 { background: linear-gradient(135deg, #f43f5e, #f97316); }
+
+    /* ── CARD TOP ROW (checkbox + name + qty) ── */
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .card input[type="checkbox"] {
+      margin-top: 3px;
+      width: 18px; height: 18px;
+      accent-color: white;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .card-name {
+      font-size: 1.1rem;
+      font-weight: 900;
+      flex: 1;
+      word-break: break-word;
+      line-height: 1.25;
+      position: relative;
+    }
+    .card.done .card-name { text-decoration: line-through; opacity: 0.7; }
+
+    /* Strikethrough animation overlay */
+    .strikethrough {
+      position: absolute;
+      top: 50%; left: 0;
+      height: 3px;
+      width: 0%;
+      background: white;
+      border-radius: 99px;
+      transform: translateY(-50%);
+      transition: width 0.35s ease-out;
+      pointer-events: none;
+    }
+    .card.done .strikethrough { width: 100%; }
+
+    /* ── QUANTITY BADGE ── */
+    .qty-badge {
+      background: rgba(255,255,255,0.3);
+      border-radius: 99px;
+      padding: 2px 10px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      white-space: nowrap;
+      align-self: flex-start;
+      flex-shrink: 0;
+    }
+
+    /* ── NOTE ── */
+    .card-note {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      font-style: italic;
+      background: rgba(0,0,0,0.12);
+      border-radius: 8px;
+      padding: 5px 10px;
+    }
+
+    /* ── REMOVE BUTTON ── */
+    .card-footer { display: flex; justify-content: flex-end; }
+    .btn-remove {
+      background: rgba(0,0,0,0.18);
+      color: white;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      border-radius: 99px;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.15s;
+    }
+    .card:hover .btn-remove { opacity: 1; }
+    .btn-remove:hover { background: rgba(0,0,0,0.35); }
+
+    /* ── PRINT ── */
+    @media print {
+      .paste-section, .btn-row, .filter-tabs,
+      .btn-remove, .btn-print, .progress-wrap { display: none !important; }
+      body { background: white; }
+      .card { color: #333 !important; background: white !important;
+              border: 2px solid #ddd; box-shadow: none; break-inside: avoid; }
+      .card.done { display: none; }
+      .qty-badge { background: #eee; color: #333; }
+    }
+
+  </style>
+</head>
+<body>
+
+<h1>🛒 My Shopping List</h1>
+<p class="tagline">Paste your notepad, click Add — your list turns into colourful cards!</p>
+
+<!-- ── PASTE SECTION ── -->
+<div class="paste-section">
+  <label>Paste your list below:</label>
+  <textarea id="textInput"
+    placeholder="Type or paste items,
+
+ Hello. I'm Twinkle. Please write down whatever you need here.
+
+But I'm your Santa Claus—even before December arrives. I'm always here for you. 🎄💚 "></textarea>
+
+  <div class="btn-row">
+    <button class="btn-add"     onclick="addItems()">+ Add to List</button>
+    <button class="btn-checked" onclick="clearChecked()">Remove Checked</button>
+    <button class="btn-clear"   onclick="clearAll()">Clear All</button>
+    <button class="btn-print"   onclick="window.print()">🖨 Print List</button>
+  </div>
+</div>
+
+<!-- ── PROGRESS BAR ── -->
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-top">
+    <span id="progressLabel">0 of 0 items</span>
+    <span id="progressPct">0%</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+</div>
+
+<!-- ── FILTER TABS ── -->
+<div class="filter-tabs" id="filterTabs">
+  <button class="tab active" onclick="setFilter('all',  this)">All</button>
+  <button class="tab"        onclick="setFilter('todo', this)">Still Need</button>
+  <button class="tab"        onclick="setFilter('done', this)">Got It</button>
+</div>
+
+<!-- ── EMPTY STATE ── -->
+<p class="empty show" id="emptyMsg">
+  <span class="empty-icon">🛍️</span>
+  Your list is empty — paste something above!
+</p>
+
+<!-- ── GRID ── -->
+<div class="grid" id="grid"></div>
+
+
+<script>
+
+  /* ──────────────────────────────
+     DATA & STORAGE
+  ────────────────────────────── */
+  let items    = JSON.parse(localStorage.getItem('shopItems') || '[]');
+  let filter   = 'all';
+  let colorIdx = items.length;          // keep colour cycling after reload
+
+  const COLORS = ['c0','c1','c2','c3','c4','c5','c6'];
+
+  function save() {
+    localStorage.setItem('shopItems', JSON.stringify(items));
+  }
+
+  /* ──────────────────────────────
+     PARSE ONE LINE
+     Supports:
+       "Milk x2"           → qty badge
+       "Bread | whole wheat" → note
+       "Eggs x6 | free range" → both
+  ────────────────────────────── */
+  function parseLine(text) {
+    let name = text.trim(), qty = '', note = '';
+
+    if (name.includes('|')) {
+      const parts = name.split('|');
+      name = parts[0].trim();
+      note = parts[1].trim();
+    }
+
+    const qtyMatch = name.match(/^(.*?)\s+[xX](\d+)$|^(.*?)\s+(\d+)[xX]$/);
+    if (qtyMatch) {
+      name = (qtyMatch[1] || qtyMatch[3]).trim();
+      qty  = 'x' + (qtyMatch[2] || qtyMatch[4]);
+    }
+
+    return { name, qty, note };
+  }
+
+  /* ──────────────────────────────
+     ACTIONS
+  ────────────────────────────── */
+  function addItems() {
+    const raw = document.getElementById('textInput').value.trim();
+    if (!raw) return;
+
+    raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean).forEach(line => {
+      const { name, qty, note } = parseLine(line);
+      if (!name) return;
+      items.push({
+        id:    Date.now() + Math.random(),
+        name, qty, note,
+        done:  false,
+        color: colorIdx++ % COLORS.length
+      });
+    });
+
+    document.getElementById('textInput').value = '';
+    save();
+    render();
+  }
+
+  function toggle(id) {
+    const item = items.find(i => i.id === id);
+    if (item) { item.done = !item.done; save(); render(); }
+  }
+
+  function remove(id) {
+    items = items.filter(i => i.id !== id);
+    save(); render();
+  }
+
+  function clearChecked() { items = items.filter(i => !i.done); save(); render(); }
+  function clearAll()     { items = [];                          save(); render(); }
+
+  function setFilter(f, btn) {
+    filter = f;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  /* Ctrl/Cmd + Enter shortcut in textarea */
+  document.getElementById('textInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) addItems();
+  });
+
+  /* ──────────────────────────────
+     RENDER
+  ────────────────────────────── */
+  function render() {
+    const total     = items.length;
+    const doneCount = items.filter(i => i.done).length;
+    const pct       = total ? Math.round((doneCount / total) * 100) : 0;
+
+    /* Progress bar */
+    const pw = document.getElementById('progressWrap');
+    if (total > 0) {
+      pw.classList.add('show');
+      document.getElementById('progressLabel').textContent = `${doneCount} of ${total} items`;
+      document.getElementById('progressPct').textContent   = pct + '%';
+      document.getElementById('progressFill').style.width  = pct + '%';
+    } else {
+      pw.classList.remove('show');
+    }
+
+    /* Filter tabs */
+    document.getElementById('filterTabs').classList.toggle('show', total > 0);
+
+    /* Empty state */
+    document.getElementById('emptyMsg').classList.toggle('show', total === 0);
+
+    /* Filter items */
+    let visible = items;
+    if (filter === 'todo') visible = items.filter(i => !i.done);
+    if (filter === 'done') visible = items.filter(i =>  i.done);
+
+    /* Build cards */
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+
+    visible.forEach(item => {
+      const card = document.createElement('div');
+      card.className = `card ${COLORS[item.color]}${item.done ? ' done' : ''}`;
+
+      card.innerHTML = `
+        <div class="card-top">
+          <input type="checkbox" ${item.done ? 'checked' : ''}
+                 onchange="toggle(${item.id})" title="Mark as got it" />
+          <span class="card-name">
+            ${esc(item.name)}
+            <span class="strikethrough"></span>
+          </span>
+          ${item.qty ? `<span class="qty-badge">${esc(item.qty)}</span>` : ''}
+        </div>
+        ${item.note ? `<div class="card-note">📝 ${esc(item.note)}</div>` : ''}
+        <div class="card-footer">
+          <button class="btn-remove" onclick="remove(${item.id})">✕ remove</button>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+  }
+
+  function esc(t) {
+    return String(t)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  render(); /* show saved items on load */
+
+</script>
+</body>
+</html>
